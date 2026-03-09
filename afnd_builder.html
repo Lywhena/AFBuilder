@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFD/AFND Builder</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap');
+:root{
+  --bg:#06090f;--surf:#0d1220;--surf2:#111827;--surf3:#161f30;
+  --border:#1c2a3d;--border2:#243447;
+  --accent:#38bdf8;--accent2:#818cf8;--accent3:#f472b6;
+  --ok:#34d399;--err:#f87171;--warn:#fbbf24;--eps:#a78bfa;
+  --text:#e2e8f0;--muted:#4b6280;--muted2:#64748b;
+  --ff:'Fira Code',monospace;--fu:'Syne',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--ff);display:flex;flex-direction:column;height:100vh}
+
+/* HEADER */
+.hdr{height:50px;background:var(--surf);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:.8rem;flex-shrink:0;z-index:50}
+.logo{font-family:var(--fu);font-weight:800;font-size:1rem;color:var(--accent);letter-spacing:-.03em;white-space:nowrap}
+.logo em{color:var(--eps);font-style:normal}
+.hsep{width:1px;height:20px;background:var(--border2)}
+.hbtn{display:flex;align-items:center;gap:.35rem;padding:.28rem .65rem;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--muted2);font-family:var(--ff);font-size:.7rem;cursor:pointer;transition:all .15s;white-space:nowrap}
+.hbtn:hover{color:var(--text);border-color:var(--accent);background:#0d1a2a}
+.hbtn.on{color:var(--accent);border-color:var(--accent);background:#0c1e30}
+.hbtn.warn:hover{color:var(--warn);border-color:var(--warn);background:#1a1200}
+.hbtn.danger:hover{color:var(--err);border-color:var(--err);background:#1f0d0d}
+.mode-tag{font-size:.65rem;color:var(--muted);padding:.2rem .5rem;background:var(--bg);border-radius:3px;border:1px solid var(--border)}
+.nfa-badge{padding:.2rem .6rem;border-radius:4px;font-size:.68rem;font-weight:700;background:#1a0d2e;color:var(--eps);border:1px solid var(--eps)}
+.hright{margin-left:auto;display:flex;align-items:center;gap:.4rem}
+
+/* LAYOUT */
+.main{flex:1;display:grid;grid-template-columns:250px 1fr 310px;overflow:hidden}
+
+/* PANELS */
+.lpanel,.rpanel{background:var(--surf);display:flex;flex-direction:column;overflow:hidden}
+.lpanel{border-right:1px solid var(--border)}
+.rpanel{border-left:1px solid var(--border)}
+.ptitle{font-family:var(--fu);font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);padding:.75rem .9rem .4rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.pscroll{flex:1;overflow-y:auto;padding:.65rem .75rem;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+
+/* FORM */
+.field{margin-bottom:.6rem}
+.field label{display:block;font-size:.64rem;color:var(--muted2);margin-bottom:.25rem}
+.inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:5px;padding:.4rem .6rem;color:var(--text);font-family:var(--ff);font-size:.75rem;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--accent)}
+.inp::placeholder{color:var(--muted)}
+.inp.eps-input:focus{border-color:var(--eps)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.chkrow{display:flex;align-items:center;gap:.5rem;padding:.25rem 0}
+.chkrow label{font-size:.72rem;color:var(--text);margin:0;cursor:pointer}
+input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:pointer}
+.btn{width:100%;padding:.45rem;border-radius:5px;border:none;font-family:var(--ff);font-size:.74rem;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:.35rem}
+.btn:last-child{margin-bottom:0}
+.btn-p{background:var(--accent);color:#06090f}
+.btn-p:hover{background:#7dd3fc}
+.btn-s{background:var(--surf2);color:var(--text);border:1px solid var(--border2)}
+.btn-s:hover{border-color:var(--accent2);color:var(--accent2)}
+.btn-eps{background:#1a0d2e;color:var(--eps);border:1px solid #4c1d95}
+.btn-eps:hover{background:#200e38;border-color:var(--eps)}
+.btn-d{background:#1f0d0d;color:var(--err);border:1px solid #451a1a}
+.btn-d:hover{background:#2d1212;border-color:var(--err)}
+.btn-ok{background:#052518;color:var(--ok);border:1px solid #065f46}
+.btn-ok:hover{background:#0a3d2a}
+.divider{height:1px;background:var(--border);margin:.6rem 0}
+.sec-hd{font-size:.6rem;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase;padding:.4rem 0 .3rem;font-family:var(--fu);font-weight:700}
+
+/* PILLS */
+.pills{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.3rem}
+.pill{padding:.12rem .45rem;border-radius:3px;border:1px solid var(--accent);background:#0c1e30;color:var(--accent);font-size:.65rem;font-weight:600}
+.pill.eps{border-color:var(--eps);background:#1a0d2e;color:var(--eps)}
+
+/* STATE LIST */
+.slist{display:flex;flex-direction:column;gap:.28rem}
+.sitem{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:5px;cursor:pointer;font-size:.72rem;transition:all .12s}
+.sitem:hover{border-color:var(--border2);background:#0d1525}
+.sdot{width:9px;height:9px;border-radius:50%;border:2px solid;flex-shrink:0}
+.sname{flex:1}
+.sbadges{display:flex;gap:.25rem}
+.sb{font-size:.56rem;padding:.08rem .3rem;border-radius:2px;font-weight:700}
+.sb-s{background:#2a1f00;color:var(--warn)}
+.sb-a{background:#052518;color:var(--ok)}
+.sb-d{background:#1f0d0d;color:var(--err)}
+.delbtn{width:16px;height:16px;border-radius:3px;border:1px solid #451a1a;background:transparent;color:var(--err);cursor:pointer;font-size:.6rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.delbtn:hover{background:#1f0d0d}
+
+/* TRANS LIST */
+.tlist{display:flex;flex-direction:column;gap:.25rem}
+.titem{display:flex;align-items:center;gap:.35rem;padding:.3rem .5rem;background:var(--bg);border:1px solid var(--border);border-radius:5px;font-size:.68rem;color:var(--muted2)}
+.tarr{color:var(--accent2)}
+.tsym{color:var(--accent);font-weight:600}
+.tsym.eps-sym{color:var(--eps)}
+
+/* CANVAS */
+.cwrap{position:relative;background:var(--bg);overflow:hidden;cursor:crosshair}
+.cwrap::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:36px 36px;opacity:.25;pointer-events:none}
+.cwrap svg{width:100%;height:100%;position:absolute;top:0;left:0}
+.chint{position:absolute;bottom:.8rem;left:50%;transform:translateX(-50%);background:var(--surf);border:1px solid var(--border2);border-radius:5px;padding:.35rem .9rem;font-size:.65rem;color:var(--muted);pointer-events:none;white-space:nowrap}
+
+/* RIGHT PANEL */
+.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;padding:.5rem;font-size:.65rem;text-align:center;cursor:pointer;color:var(--muted2);border-bottom:2px solid transparent;transition:all .15s;font-family:var(--fu);font-weight:600;letter-spacing:.05em}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tab.eps-tab.on{color:var(--eps);border-bottom-color:var(--eps)}
+.tab-content{display:none;flex:1;overflow-y:auto;padding:.7rem}
+.tab-content.on{display:flex;flex-direction:column;gap:.6rem}
+
+/* RESULT */
+.rbox{padding:.55rem .75rem;border-radius:5px;font-size:.75rem;border:1px solid var(--border);background:var(--bg);color:var(--muted2);min-height:36px;transition:all .2s}
+.rbox.ok{border-color:var(--ok);background:#052518;color:var(--ok)}
+.rbox.err{border-color:var(--err);background:#1f0d0d;color:var(--err)}
+
+/* TRACE */
+.trace{display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.4rem}
+.tchip{padding:.18rem .45rem;border-radius:4px;font-size:.65rem;background:var(--surf2);border:1px solid var(--border2);transition:all .25s}
+.tchip.cur{border-color:var(--accent);color:var(--accent);background:#0c1e30}
+.tchip.ok{border-color:var(--ok);color:var(--ok);background:#052518}
+.tchip.err{border-color:var(--err);color:var(--err);background:#1f0d0d}
+.tchip.eps{border-color:var(--eps);color:var(--eps);background:#1a0d2e}
+
+/* BATCH */
+.btarea{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:5px;padding:.45rem .6rem;color:var(--text);font-family:var(--ff);font-size:.72rem;resize:none;outline:none;min-height:75px}
+.btarea:focus{border-color:var(--accent)}
+.bres{display:flex;flex-direction:column;gap:.2rem;max-height:160px;overflow-y:auto}
+.brow{display:flex;align-items:center;gap:.4rem;padding:.25rem .5rem;border-radius:4px;font-size:.68rem;background:var(--bg);border:1px solid var(--border)}
+.brow.ok{border-color:#065f46;background:#052518}
+.brow.err{border-color:#7f1d1d;background:#1f0d0d}
+.bicon{font-size:.6rem;font-weight:700}
+.brow.ok .bicon{color:var(--ok)}
+.brow.err .bicon{color:var(--err)}
+.bword{flex:1;color:var(--text);font-weight:600}
+.bstate{color:var(--muted2);font-size:.62rem}
+
+/* DELTA TABLE */
+.dtbl{width:100%;border-collapse:collapse;font-size:.68rem}
+.dtbl th{color:var(--accent);padding:.28rem .4rem;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}
+.dtbl th.eps-th{color:var(--eps)}
+.dtbl td{padding:.22rem .4rem;border-bottom:1px solid #0f1a28;text-align:center;color:var(--text)}
+.dtbl td:first-child{text-align:left;color:var(--muted2)}
+.dtbl td.multi{color:var(--accent2)}
+.dtbl td.eps-cell{color:var(--eps)}
+
+/* CLOSURE BOX */
+.cbox{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:.6rem .75rem;font-size:.7rem}
+.cbox h4{font-family:var(--fu);font-size:.62rem;color:var(--eps);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem}
+.cbox-row{display:flex;align-items:baseline;gap:.4rem;padding:.15rem 0;border-bottom:1px solid var(--border)}
+.cbox-row:last-child{border:none}
+.cbox-state{color:var(--text);font-weight:600;min-width:40px}
+.cbox-eq{color:var(--muted)}
+.cbox-set{color:var(--eps)}
+
+/* CONVERT */
+.conv-panel{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:.7rem}
+.conv-panel h4{font-family:var(--fu);font-size:.62rem;color:var(--accent2);letter-spacing:.08em;margin-bottom:.5rem}
+.conv-step{font-size:.68rem;color:var(--muted2);padding:.2rem 0;border-bottom:1px solid var(--border);line-height:1.5}
+.conv-step:last-child{border:none}
+.conv-step b{color:var(--text)}
+.conv-step em{color:var(--accent2);font-style:normal}
+
+/* FORMAL DEF */
+.fdef{font-size:.68rem;color:var(--muted2);line-height:1.9}
+.fdef b{color:var(--accent);font-weight:400}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center}
+.overlay.on{display:flex;animation:fi .15s}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surf2);border:1px solid var(--border2);border-radius:9px;padding:1.3rem;width:360px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.modal h3{font-family:var(--fu);font-size:.95rem;margin-bottom:.9rem;color:var(--accent)}
+.mbtns{display:flex;gap:.4rem;margin-top:.9rem}
+.mbtns .btn{margin:0;flex:1}
+
+/* CTX */
+.ctx{position:fixed;background:var(--surf2);border:1px solid var(--border2);border-radius:6px;padding:.3rem;z-index:1000;box-shadow:0 8px 30px rgba(0,0,0,.5);display:none;min-width:155px}
+.ctx.on{display:block;animation:pop .12s ease}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.ci{padding:.35rem .7rem;border-radius:3px;font-size:.72rem;cursor:pointer;color:var(--text);transition:background .1s;display:flex;align-items:center;gap:.45rem}
+.ci:hover{background:#1a2535}
+.ci.danger{color:var(--err)}
+.ci.danger:hover{background:#1f0d0d}
+.ci.eps-ci{color:var(--eps)}
+.ci.eps-ci:hover{background:#1a0d2e}
+.csep{height:1px;background:var(--border);margin:.25rem 0}
+
+/* NOTIF */
+.notif{position:fixed;bottom:1.2rem;right:1.2rem;background:var(--surf2);border:1px solid var(--border2);border-radius:6px;padding:.5rem .9rem;font-size:.72rem;color:var(--text);z-index:300;opacity:0;transform:translateY(8px);transition:all .22s;pointer-events:none}
+.notif.on{opacity:1;transform:translateY(0)}
+.notif.ok{border-color:var(--ok);color:var(--ok)}
+.notif.err{border-color:var(--err);color:var(--err)}
+
+/* SVG */
+.edge-path{fill:none;stroke:#2a3f58;stroke-width:1.8}
+.edge-path.epsedge{stroke:#4c1d95;stroke-dasharray:6 3}
+.edge-path.hl{stroke:var(--accent)}
+.edge-path.hl-ok{stroke:var(--ok)}
+.edge-path.hl-eps{stroke:var(--eps)}
+.elabel{font-family:'Fira Code',monospace;fill:#94a3b8;font-size:11px}
+.elabel.eps-lbl{fill:#a78bfa}
+.temp-edge{fill:none;stroke:var(--accent2);stroke-width:1.5;stroke-dasharray:5 3}
+.node-circle{transition:filter .15s}
+.node-group{cursor:pointer}
+.node-circle:hover{filter:brightness(1.3)}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">AFD/<em>AFND</em> builder</div>
+  <div class="hsep"></div>
+  <button class="hbtn on" id="bm-node" onclick="setMode('node')">⬤ Estado</button>
+  <button class="hbtn" id="bm-trans" onclick="setMode('trans')">→ Transição</button>
+  <button class="hbtn" id="bm-eps" onclick="setMode('eps')" style="color:var(--eps);border-color:#4c1d95">ε Epsilon</button>
+  <button class="hbtn" id="bm-sel" onclick="setMode('sel')">↖ Mover</button>
+  <div class="hsep"></div>
+  <span class="mode-tag" id="mode-tag">modo: adicionar estado</span>
+  <span class="nfa-badge" id="nfa-badge">AFD</span>
+  <div class="hright">
+    <button class="hbtn" onclick="autoLayout()">⧉ Layout</button>
+    <button class="hbtn warn" onclick="convertNFAtoDFA()">⇒ AFND→AFD</button>
+    <button class="hbtn" onclick="exportJSON()">↓ JSON</button>
+    <button class="hbtn" onclick="importClick()">↑ JSON</button>
+    <input type="file" id="fimport" accept=".json" style="display:none" onchange="importJSON(event)">
+    <div class="hsep"></div>
+    <button class="hbtn danger" onclick="clearAll()">✕ Limpar</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- LEFT -->
+<div class="lpanel">
+  <div class="ptitle">⟨ Construtor ⟩</div>
+  <div class="pscroll">
+
+    <div class="field">
+      <label>Nome / Linguagem</label>
+      <input class="inp" id="aut-name" placeholder="L = { w | ... }">
+    </div>
+    <div class="field">
+      <label>Alfabeto (vírgula, sem ε)</label>
+      <input class="inp" id="alphabet" placeholder="0, 1" oninput="updateAlpha()">
+      <div class="pills" id="alpha-pills"></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="sec-hd">➕ Novo Estado</div>
+    <div class="field">
+      <label>Nome</label>
+      <input class="inp" id="ns-name" placeholder="q0">
+    </div>
+    <div class="chkrow"><input type="checkbox" id="ns-start"><label for="ns-start">Inicial</label></div>
+    <div class="chkrow"><input type="checkbox" id="ns-accept"><label for="ns-accept">Aceitação</label></div>
+    <div class="chkrow"><input type="checkbox" id="ns-dead"><label for="ns-dead">Morto (poço)</label></div>
+    <button class="btn btn-p" onclick="addStatePanel()">+ Adicionar Estado</button>
+
+    <div class="divider"></div>
+    <div class="sec-hd">⤳ Nova Transição</div>
+    <div class="row2">
+      <div class="field"><label>De</label><select class="inp" id="tf-from"><option value="">—</option></select></div>
+      <div class="field"><label>Para</label><select class="inp" id="tf-to"><option value="">—</option></select></div>
+    </div>
+    <div class="field">
+      <label>Símbolos (vírgula) — use <span style="color:var(--eps)">ε</span> p/ epsilon</label>
+      <input class="inp eps-input" id="tf-sym" placeholder="0,1 ou ε">
+    </div>
+    <button class="btn btn-s" onclick="addTransPanel()">+ Adicionar Transição</button>
+    <button class="btn btn-eps" onclick="addEpsPanel()">+ Adicionar ε-Transição</button>
+
+    <div class="divider"></div>
+    <div class="sec-hd">◉ Estados</div>
+    <div class="slist" id="slist"></div>
+
+    <div class="divider"></div>
+    <div class="sec-hd">⤳ Transições</div>
+    <div class="tlist" id="tlist"></div>
+  </div>
+</div>
+
+<!-- CANVAS -->
+<div class="cwrap" id="cwrap">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#4a6080"/></marker>
+      <marker id="arr-hl" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#38bdf8"/></marker>
+      <marker id="arr-ok" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+      <marker id="arr-eps" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#a78bfa"/></marker>
+    </defs>
+    <g id="elayer"></g>
+    <g id="nlayer"></g>
+    <line id="tmpline" class="temp-edge" style="display:none" marker-end="url(#arr-hl)"/>
+  </svg>
+  <div class="chint" id="chint">Clique para adicionar estado · Duplo-clique para editar · Botão direito para opções</div>
+</div>
+
+<!-- RIGHT -->
+<div class="rpanel">
+  <div class="tabs">
+    <div class="tab on" onclick="switchTab(0)">▶ Testar</div>
+    <div class="tab" onclick="switchTab(1)">≡ Tabela δ</div>
+    <div class="tab eps-tab" onclick="switchTab(2)">ε-Fecho</div>
+    <div class="tab" onclick="switchTab(3)">⇒ Converter</div>
+  </div>
+
+  <!-- TAB 0: TEST -->
+  <div class="tab-content on" id="tc0">
+    <div>
+      <div style="font-size:.64rem;color:var(--muted2);margin-bottom:.4rem">Teste individual</div>
+      <div style="display:flex;gap:.4rem">
+        <input class="inp" id="tw" placeholder='palavra (vazia = ε)' onkeydown="if(event.key==='Enter')runTest()">
+        <button style="padding:.4rem .8rem;border-radius:5px;border:none;background:var(--accent2);color:#fff;font-family:var(--ff);font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap" onclick="runTest()">▶ Run</button>
+      </div>
+      <div class="rbox" id="rbox" style="margin-top:.4rem">— aguardando —</div>
+      <div class="trace" id="trace"></div>
+    </div>
+    <div>
+      <div style="font-size:.64rem;color:var(--muted2);margin-bottom:.4rem">Lote (uma palavra por linha · "epsilon" = ε)</div>
+      <textarea class="btarea" id="btwords" placeholder="01&#10;10&#10;epsilon&#10;001"></textarea>
+      <button class="btn btn-s" style="margin-top:.35rem" onclick="runBatch()">▶ Testar Lote</button>
+      <div class="bres" id="bres"></div>
+    </div>
+    <div class="cbox" id="fdef-box"></div>
+  </div>
+
+  <!-- TAB 1: DELTA -->
+  <div class="tab-content" id="tc1">
+    <div id="dtbl-wrap"></div>
+  </div>
+
+  <!-- TAB 2: EPSILON CLOSURE -->
+  <div class="tab-content" id="tc2">
+    <div class="cbox" id="closure-box">
+      <h4>ε-Fecho(q) para cada estado</h4>
+      <div id="closure-content" style="font-size:.7rem;color:var(--muted)">Adicione transições ε primeiro</div>
+    </div>
+    <div class="cbox">
+      <h4>O que é ε-Fecho?</h4>
+      <div style="font-size:.68rem;color:var(--muted2);line-height:1.7">
+        ε-Fecho(q) é o conjunto de todos os estados alcançáveis a partir de q usando <em style="color:var(--eps)">apenas ε-transições</em> (incluindo o próprio q).<br><br>
+        Na simulação AFND, após cada símbolo lido, calculamos o ε-fecho do conjunto de estados resultante antes de continuar.
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: CONVERT -->
+  <div class="tab-content" id="tc3">
+    <div style="font-size:.68rem;color:var(--muted2);line-height:1.6;background:var(--bg);border:1px solid var(--border2);border-radius:5px;padding:.6rem">
+      A <b style="color:var(--accent2)">construção de subconjuntos</b> converte qualquer AFND (com ou sem ε) em um AFD equivalente. Cada estado do AFD corresponde a um <em style="color:var(--eps)">conjunto de estados</em> do AFND.
+    </div>
+    <button class="btn btn-ok" onclick="convertNFAtoDFA()">⇒ Executar Conversão AFND → AFD</button>
+    <div class="conv-panel" id="conv-result"><h4>Resultado da Conversão</h4><div style="font-size:.68rem;color:var(--muted)">Execute a conversão para ver o resultado.</div></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL EDIT NODE -->
+<div class="overlay" id="modal-node">
+  <div class="modal">
+    <h3>Editar Estado</h3>
+    <div class="field"><label>Nome</label><input class="inp" id="en-name"></div>
+    <div class="chkrow"><input type="checkbox" id="en-start"><label for="en-start">Inicial</label></div>
+    <div class="chkrow"><input type="checkbox" id="en-accept"><label for="en-accept">Aceitação</label></div>
+    <div class="chkrow"><input type="checkbox" id="en-dead"><label for="en-dead">Morto</label></div>
+    <div class="mbtns">
+      <button class="btn btn-s" onclick="closeModal('modal-node')">Cancelar</button>
+      <button class="btn btn-p" onclick="saveNode()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT TRANS -->
+<div class="overlay" id="modal-trans">
+  <div class="modal">
+    <h3>Editar Transição</h3>
+    <div style="font-size:.68rem;color:var(--muted2);margin-bottom:.5rem">Use vírgula para múltiplos símbolos. Use <span style="color:var(--eps)">ε</span> para epsilon.</div>
+    <div class="field"><label>Símbolo(s)</label><input class="inp eps-input" id="et-sym"></div>
+    <div class="mbtns">
+      <button class="btn btn-s" onclick="closeModal('modal-trans')">Cancelar</button>
+      <button class="btn btn-p" onclick="saveTrans()">Salvar</button>
+      <button class="btn btn-d" onclick="deleteTrans()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div class="ctx" id="ctx"></div>
+<div class="notif" id="notif"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════════
+const EPS = 'ε';
+let nodes = [], transitions = [], alphabet = [];
+let mode = 'node', transSrc = null, dragging = null;
+let nodeCounter = 0, transCounter = 0;
+let editNodeId = null, editTransData = null;
+
+const svg   = document.getElementById('svg');
+const elay  = document.getElementById('elayer');
+const nlay  = document.getElementById('nlayer');
+const tmp   = document.getElementById('tmpline');
+const R = 28;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODE
+// ═══════════════════════════════════════════════════════════════════════════
+function setMode(m) {
+  mode = m; transSrc = null; tmp.style.display='none';
+  ['node','trans','eps','sel'].forEach(x => document.getElementById('bm-'+x).classList.remove('on'));
+  document.getElementById('bm-'+m).classList.add('on');
+  const labels = {node:'adicionar estado',trans:'adicionar transição',eps:'adicionar ε-transição',sel:'mover estados'};
+  document.getElementById('mode-tag').textContent = 'modo: '+labels[m];
+  svg.style.cursor = m==='sel'?'default':'crosshair';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ALPHABET
+// ═══════════════════════════════════════════════════════════════════════════
+function updateAlpha() {
+  const raw = document.getElementById('alphabet').value;
+  alphabet = raw.split(',').map(s=>s.trim()).filter(Boolean).filter(s=>s!==EPS);
+  const pp = document.getElementById('alpha-pills');
+  pp.innerHTML = alphabet.map(a=>`<span class="pill">${a}</span>`).join('');
+  const hasEps = transitions.some(t=>t.symbols.includes(EPS));
+  pp.innerHTML += hasEps ? `<span class="pill eps">ε</span>` : '';
+  updateNFAbadge();
+  renderRight();
+}
+
+function updateNFAbadge() {
+  const isNFA = transitions.some(t => {
+    if(t.symbols.includes(EPS)) return true;
+    // check multiple destinations for same state+symbol
+    for(const sym of t.symbols) {
+      const count = transitions.filter(x => x.from===t.from && x.symbols.includes(sym)).length;
+      if(count > 1) return true;
+    }
+    return false;
+  });
+  const b = document.getElementById('nfa-badge');
+  b.textContent = isNFA ? 'AFND' : 'AFD';
+  b.style.background = isNFA ? '#1a0d2e' : '#0c1e30';
+  b.style.color = isNFA ? 'var(--eps)' : 'var(--accent)';
+  b.style.borderColor = isNFA ? 'var(--eps)' : 'var(--accent)';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADD NODES
+// ═══════════════════════════════════════════════════════════════════════════
+function addStatePanel() {
+  const name = document.getElementById('ns-name').value.trim() || `q${nodeCounter}`;
+  const start = document.getElementById('ns-start').checked;
+  const accept = document.getElementById('ns-accept').checked;
+  const dead = document.getElementById('ns-dead').checked;
+  if(start) nodes.forEach(n=>n.start=false);
+  const rect = svg.getBoundingClientRect();
+  const x = 90 + (nodeCounter%5)*130 + Math.random()*30;
+  const y = 80 + Math.floor(nodeCounter/5)*130 + Math.random()*30;
+  nodes.push({id:'n'+nodeCounter++, name, x, y, start, accept, dead});
+  document.getElementById('ns-name').value='';
+  ['ns-start','ns-accept','ns-dead'].forEach(id=>document.getElementById(id).checked=false);
+  render(); notify('"'+name+'" adicionado','ok');
+}
+
+function svgCoords(e) {
+  const r = svg.getBoundingClientRect();
+  return {x:e.clientX-r.left, y:e.clientY-r.top};
+}
+
+svg.addEventListener('click', e => {
+  if(e.target.closest('.node-group')) return;
+  if(mode!=='node') return;
+  const p = svgCoords(e);
+  nodes.push({id:'n'+nodeCounter++, name:`q${nodeCounter-1}`, x:p.x, y:p.y, start:nodes.length===0, accept:false, dead:false});
+  render();
+});
+
+svg.addEventListener('mousemove', e => {
+  if(dragging) {
+    const p = svgCoords(e);
+    const n = nodes.find(x=>x.id===dragging.id);
+    if(n){n.x=p.x-dragging.ox; n.y=p.y-dragging.oy;}
+    render(); return;
+  }
+  if((mode==='trans'||mode==='eps') && transSrc) {
+    const p = svgCoords(e);
+    const s = nodes.find(n=>n.id===transSrc);
+    if(s){
+      tmp.setAttribute('x1',s.x); tmp.setAttribute('y1',s.y);
+      tmp.setAttribute('x2',p.x); tmp.setAttribute('y2',p.y);
+      tmp.style.display='block';
+      tmp.style.stroke = mode==='eps'?'var(--eps)':'var(--accent2)';
+    }
+  }
+});
+
+document.addEventListener('mouseup',()=>{dragging=null;});
+document.addEventListener('click', closeCtx);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NODE EVENTS
+// ═══════════════════════════════════════════════════════════════════════════
+function onNodeDown(e,id) {
+  e.stopPropagation();
+  if(mode==='sel'){
+    const p=svgCoords(e), n=nodes.find(x=>x.id===id);
+    dragging={id, ox:p.x-n.x, oy:p.y-n.y}; return;
+  }
+  if(mode==='trans'||mode==='eps') {
+    if(!transSrc){
+      transSrc=id;
+      const s=nodes.find(n=>n.id===id);
+      tmp.setAttribute('x1',s.x); tmp.setAttribute('y1',s.y);
+      tmp.setAttribute('x2',s.x); tmp.setAttribute('y2',s.y);
+      tmp.style.display='block';
+    } else {
+      const syms = mode==='eps'?[EPS]:null;
+      openTransModal(transSrc, id, null, syms);
+      transSrc=null; tmp.style.display='none';
+    }
+  }
+}
+
+function onNodeDbl(e,id) {
+  e.stopPropagation();
+  editNodeId=id;
+  const n=nodes.find(x=>x.id===id);
+  document.getElementById('en-name').value=n.name;
+  document.getElementById('en-start').checked=n.start;
+  document.getElementById('en-accept').checked=n.accept;
+  document.getElementById('en-dead').checked=n.dead;
+  showModal('modal-node');
+}
+
+function onNodeRight(e,id) {
+  e.preventDefault(); e.stopPropagation();
+  const n=nodes.find(x=>x.id===id);
+  showCtx(e.clientX,e.clientY,[
+    {icon:'✎',label:'Editar',fn:()=>onNodeDbl(e,id)},
+    {icon:n.start?'○':'→',label:n.start?'Remover inicial':'Tornar inicial',fn:()=>{nodes.forEach(x=>x.start=false);n.start=true;render();}},
+    {icon:'✓',label:n.accept?'Remover aceitação':'Aceitação',fn:()=>{n.accept=!n.accept;render();}},
+    {icon:'✗',label:n.dead?'Remover morto':'Marcar morto',fn:()=>{n.dead=!n.dead;render();}},
+    'sep',
+    {icon:'ε',label:'ε-Fecho deste estado',fn:()=>{const cl=epsClosure([id]);notify('ε-Fecho: {'+cl.map(x=>nodes.find(y=>y.id===x)?.name).join(',')+'}');},eps:true},
+    'sep',
+    {icon:'🗑',label:'Excluir',fn:()=>deleteNode(id),danger:true},
+  ]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TRANSITIONS PANEL
+// ═══════════════════════════════════════════════════════════════════════════
+function addTransPanel() {
+  const from=document.getElementById('tf-from').value;
+  const to=document.getElementById('tf-to').value;
+  const raw=document.getElementById('tf-sym').value;
+  if(!from||!to||!raw){notify('Preencha todos os campos','err');return;}
+  const syms=raw.split(',').map(s=>s.trim()).filter(Boolean);
+  mergeOrAddTrans(from,to,syms);
+  document.getElementById('tf-sym').value='';
+  render(); notify('Transição adicionada','ok');
+}
+
+function addEpsPanel() {
+  const from=document.getElementById('tf-from').value;
+  const to=document.getElementById('tf-to').value;
+  if(!from||!to){notify('Selecione De e Para','err');return;}
+  mergeOrAddTrans(from,to,[EPS]);
+  render(); notify('ε-transição adicionada','ok');
+}
+
+function mergeOrAddTrans(from,to,syms) {
+  const ex=transitions.find(t=>t.from===from&&t.to===to);
+  if(ex){ex.symbols=[...new Set([...ex.symbols,...syms])];}
+  else{transitions.push({id:'t'+transCounter++,from,to,symbols:syms});}
+  updateNFAbadge();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TRANS MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+function openTransModal(from,to,existId,preSyms) {
+  if(existId){
+    editTransData={type:'edit',id:existId};
+    const t=transitions.find(x=>x.id===existId);
+    document.getElementById('et-sym').value=t.symbols.join(',');
+  } else {
+    editTransData={type:'new',from,to};
+    document.getElementById('et-sym').value=preSyms?preSyms.join(','):'';
+  }
+  showModal('modal-trans');
+}
+
+function saveTrans() {
+  const raw=document.getElementById('et-sym').value;
+  const syms=raw.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!syms.length){notify('Informe símbolos','err');return;}
+  if(editTransData.type==='new'){
+    mergeOrAddTrans(editTransData.from,editTransData.to,syms);
+  } else {
+    const t=transitions.find(x=>x.id===editTransData.id);
+    if(t){t.symbols=syms;}
+    updateNFAbadge();
+  }
+  closeModal('modal-trans'); render();
+}
+
+function deleteTrans() {
+  if(editTransData.type==='edit'){
+    transitions=transitions.filter(t=>t.id!==editTransData.id);
+    updateNFAbadge();
+  }
+  closeModal('modal-trans'); render();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EDIT NODE
+// ═══════════════════════════════════════════════════════════════════════════
+function saveNode() {
+  const n=nodes.find(x=>x.id===editNodeId); if(!n) return;
+  const nm=document.getElementById('en-name').value.trim();
+  if(nm) n.name=nm;
+  n.accept=document.getElementById('en-accept').checked;
+  n.dead=document.getElementById('en-dead').checked;
+  if(document.getElementById('en-start').checked){nodes.forEach(x=>x.start=false); n.start=true;}
+  else if(!document.getElementById('en-start').checked) n.start=false;
+  closeModal('modal-node'); render();
+}
+
+function deleteNode(id) {
+  nodes=nodes.filter(n=>n.id!==id);
+  transitions=transitions.filter(t=>t.from!==id&&t.to!==id);
+  updateNFAbadge(); render();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ε-CLOSURE (core NFA algorithm)
+// ═══════════════════════════════════════════════════════════════════════════
+function epsClosure(stateIds) {
+  const visited=new Set(stateIds);
+  const stack=[...stateIds];
+  while(stack.length){
+    const s=stack.pop();
+    transitions
+      .filter(t=>t.from===s && t.symbols.includes(EPS))
+      .forEach(t=>{ if(!visited.has(t.to)){visited.add(t.to);stack.push(t.to);} });
+  }
+  return [...visited];
+}
+
+// NFA move: from a set of state IDs, read symbol, return new set (with ε-closure)
+function nfaMove(stateIds, sym) {
+  const reached=new Set();
+  stateIds.forEach(s=>{
+    transitions
+      .filter(t=>t.from===s && t.symbols.includes(sym))
+      .forEach(t=>reached.add(t.to));
+  });
+  return epsClosure([...reached]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SIMULATE (AFND by subset)
+// ═══════════════════════════════════════════════════════════════════════════
+function simulate(word) {
+  const start=nodes.find(n=>n.start);
+  if(!start) return {accepted:false,trace:[],finalStates:[]};
+  let current=epsClosure([start.id]);
+  const stateNames=ids=>ids.map(id=>nodes.find(n=>n.id===id)?.name||'?');
+  const trace=[{states:stateNames(current),sym:'',type:'normal'}];
+
+  for(const ch of word){
+    if(!alphabet.includes(ch) && ch!==EPS){
+      trace.push({states:['∅'],sym:ch,type:'err'});
+      return {accepted:false,trace,finalStates:[]};
+    }
+    const next=nfaMove(current,ch);
+    trace[trace.length-1].sym=ch;
+    if(next.length===0){
+      trace.push({states:['∅'],sym:'',type:'err'});
+      return {accepted:false,trace,finalStates:[]};
+    }
+    // show eps closure if relevant
+    const directReach=[...new Set(current.flatMap(s=>transitions.filter(t=>t.from===s&&t.symbols.includes(ch)).map(t=>t.to)))];
+    const afterEps=epsClosure(directReach);
+    if(afterEps.length!==directReach.length){
+      trace.push({states:stateNames(directReach),sym:'ε',type:'eps'});
+    }
+    current=next;
+    trace.push({states:stateNames(current),sym:'',type:'normal'});
+  }
+  const accepted=current.some(id=>nodes.find(n=>n.id===id)?.accept);
+  return {accepted,trace,finalStates:stateNames(current)};
+}
+
+function runTest(){
+  const word=document.getElementById('tw').value;
+  const {accepted,trace,finalStates}=simulate(word);
+  const rbox=document.getElementById('rbox');
+  const dw=word===''?'ε (vazia)':'"'+word+'"';
+  rbox.className='rbox '+(accepted?'ok':'err');
+  rbox.textContent=(accepted?'✓ ACEITA':'✗ REJEITADA')+' — '+dw+(accepted?' ∈ L':' ∉ L')+'   [estados finais: {'+finalStates.join(',')+'}]';
+
+  const trow=document.getElementById('trace');
+  trow.innerHTML=trace.map((step,i)=>{
+    const isLast=i===trace.length-1;
+    let cls=isLast?(accepted?'ok':'err'):'';
+    if(step.type==='eps') cls='eps';
+    const label='{'+step.states.join(',')+'}';
+    const sym=step.sym?` ─${step.sym}→`:'';
+    return `<span class="tchip ${cls}">${label}${sym}</span>`;
+  }).join('');
+}
+
+function runBatch(){
+  const words=document.getElementById('btwords').value.split('\n').map(w=>w.trim());
+  const res=document.getElementById('bres');
+  res.innerHTML=words.map(w=>{
+    const word=w==='epsilon'?'':w;
+    const {accepted,finalStates}=simulate(word);
+    return `<div class="brow ${accepted?'ok':'err'}">
+      <span class="bicon">${accepted?'✓':'✗'}</span>
+      <span class="bword">${word===''?'ε':word}</span>
+      <span class="bstate">{${finalStates.join(',')}}</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AFND → AFD (Subset Construction)
+// ═══════════════════════════════════════════════════════════════════════════
+function convertNFAtoDFA() {
+  const start=nodes.find(n=>n.start);
+  if(!start||!alphabet.length){notify('Defina estados, alfabeto e inicial','err');return;}
+  const steps=[];
+  const setKey=ids=>[...new Set(ids)].sort().join(',');
+  const startSet=epsClosure([start.id]);
+  const startKey=setKey(startSet);
+  const dfaStates={};
+  const dfaTrans=[];
+  const queue=[startSet];
+  const visited=new Set([startKey]);
+
+  while(queue.length){
+    const cur=queue.shift();
+    const key=setKey(cur);
+    const label='{'+cur.map(id=>nodes.find(n=>n.id===id)?.name||'?').join(',')+'}';
+    const isAccept=cur.some(id=>nodes.find(n=>n.id===id)?.accept);
+    dfaStates[key]={key,label,accept:isAccept,ids:cur};
+
+    alphabet.forEach(sym=>{
+      const next=nfaMove(cur,sym);
+      const nkey=setKey(next);
+      if(next.length===0){
+        steps.push(`δ(${label}, ${sym}) = ∅`);
+        dfaTrans.push({from:key,to:'∅',sym});
+        if(!dfaStates['∅']){dfaStates['∅']={key:'∅',label:'∅',accept:false,ids:[]};}
+        return;
+      }
+      const nlabel='{'+next.map(id=>nodes.find(n=>n.id===id)?.name||'?').join(',')+'}';
+      steps.push(`δ(${label}, ${sym}) = ${nlabel}`);
+      dfaTrans.push({from:key,to:nkey,sym});
+      if(!visited.has(nkey)){visited.add(nkey);queue.push(next);}
+      if(!dfaStates[nkey]) dfaStates[nkey]={key:nkey,label:nlabel,accept:next.some(id=>nodes.find(n=>n.id===id)?.accept),ids:next};
+    });
+  }
+
+  // Render result
+  const stateList=Object.values(dfaStates);
+  const box=document.getElementById('conv-result');
+  box.innerHTML=`<h4>Resultado: AFND → AFD (${stateList.length} estados)</h4>
+    <div style="font-size:.65rem;color:var(--muted2);margin-bottom:.5rem">Estados do AFD = subconjuntos dos estados do AFND</div>`
+    +steps.map(s=>`<div class="conv-step">${s.replace(/δ/g,'<b>δ</b>').replace(/\{[^}]*\}/g,m=>`<em>${m}</em>`)}</div>`).join('')
+    +`<div class="divider" style="margin:.6rem 0"></div>
+    <div style="font-size:.65rem;color:var(--accent2);margin-bottom:.4rem;font-family:var(--fu);font-weight:700">Estados do AFD resultante</div>`
+    +stateList.map(s=>`<div class="conv-step"><b>${s.label}</b>${s.accept?' <span style="color:var(--ok)">✓ aceitação</span>':''}</div>`).join('');
+
+  // Load into canvas option
+  box.innerHTML+=`<button class="btn btn-ok" style="margin-top:.6rem" onclick="loadDFAfromSubset(${JSON.stringify({dfaStates,dfaTrans,startKey}).replace(/"/g,'&quot;')})">⬤ Carregar AFD no Canvas</button>`;
+
+  switchTab(3);
+  notify('Conversão concluída! '+stateList.length+' estados','ok');
+}
+
+function loadDFAfromSubset(data) {
+  // parse escaped JSON back
+  const {dfaStates,dfaTrans,startKey}=data;
+  nodes=[]; transitions=[];
+  nodeCounter=0; transCounter=0;
+  const idMap={};
+  const stList=Object.values(dfaStates);
+  const n=stList.length;
+  const rect=svg.getBoundingClientRect();
+  const W=rect.width||600, H=rect.height||400;
+  stList.forEach((s,i)=>{
+    const angle=(2*Math.PI*i/n)-Math.PI/2;
+    const rx=Math.min(W*.38,220), ry=Math.min(H*.38,160);
+    const id='n'+nodeCounter++;
+    idMap[s.key]=id;
+    nodes.push({id,name:s.label,x:W/2+rx*Math.cos(angle),y:H/2+ry*Math.sin(angle),start:s.key===startKey,accept:s.accept,dead:s.key==='∅'});
+  });
+  dfaTrans.forEach(t=>{
+    const fid=idMap[t.from], tid=idMap[t.to];
+    if(fid&&tid) mergeOrAddTrans(fid,tid,[t.sym]);
+  });
+  document.getElementById('alphabet').value=alphabet.join(', ');
+  updateAlpha(); render(); switchTab(0);
+  notify('AFD carregado no canvas!','ok');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════════════
+function render() {
+  renderEdges(); renderNodes();
+  renderStateList(); renderTransList(); renderSelects();
+  renderRight();
+}
+
+function renderEdges() {
+  elay.innerHTML='';
+  const pairs={};
+  transitions.forEach(t=>{
+    const k=t.from+'|'+t.to;
+    if(!pairs[k]) pairs[k]=[];
+    pairs[k].push(t);
+  });
+  Object.entries(pairs).forEach(([key,tlist])=>{
+    const [fid,tid]=key.split('|');
+    const from=nodes.find(n=>n.id===fid), to=nodes.find(n=>n.id===tid);
+    if(!from||!to) return;
+    const allSyms=tlist.flatMap(t=>t.symbols);
+    const label=allSyms.join(',');
+    const isEps=allSyms.every(s=>s===EPS);
+    const hasEps=allSyms.includes(EPS);
+    const tid0=tlist[0].id;
+
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cursor='pointer';
+    g.addEventListener('dblclick',e=>{e.stopPropagation();openTransModal(fid,tid,tid0);});
+
+    const edgeCls='edge-path'+(isEps?' epsedge':'');
+    const arrId=isEps?'arr-eps':'arr';
+    const lblCls='elabel'+(isEps?' eps-lbl':'');
+
+    if(fid===tid){
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',`M ${from.x-R+5} ${from.y-8} C ${from.x-55} ${from.y-80} ${from.x+55} ${from.y-80} ${from.x+R-5} ${from.y-8}`);
+      path.setAttribute('class',edgeCls);
+      path.setAttribute('marker-end',`url(#${arrId})`);
+      g.appendChild(path);
+      g.appendChild(mkTxt(from.x, from.y-R-34, label, lblCls));
+    } else {
+      const rev=pairs[tid+'|'+fid];
+      const dx=to.x-from.x, dy=to.y-from.y;
+      const dist=Math.sqrt(dx*dx+dy*dy)||1;
+      const nx=-dy/dist, ny=dx/dist;
+      const bend=rev?28:0;
+      const sx=from.x+dx/dist*R+nx*bend, sy=from.y+dy/dist*R+ny*bend;
+      const ex=to.x-dx/dist*(R+7)+nx*bend, ey=to.y-dy/dist*(R+7)+ny*bend;
+      const mx=(sx+ex)/2+nx*(rev?18:0), my=(sy+ey)/2+ny*(rev?18:0);
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d', rev?`M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}`:`M ${sx} ${sy} L ${ex} ${ey}`);
+      path.setAttribute('class',edgeCls);
+      path.setAttribute('marker-end',`url(#${arrId})`);
+      g.appendChild(path);
+      g.appendChild(mkTxt(mx,my-8,label,lblCls));
+    }
+    elay.appendChild(g);
+  });
+}
+
+function mkTxt(x,y,content,cls='elabel') {
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',x); t.setAttribute('y',y);
+  t.setAttribute('text-anchor','middle');
+  t.setAttribute('class',cls);
+  t.textContent=content;
+  return t;
+}
+
+function renderNodes() {
+  nlay.innerHTML='';
+  nodes.forEach(node=>{
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','node-group');
+    g.addEventListener('mousedown',e=>onNodeDown(e,node.id));
+    g.addEventListener('dblclick',e=>onNodeDbl(e,node.id));
+    g.addEventListener('contextmenu',e=>onNodeRight(e,node.id));
+
+    if(node.start){
+      const arr=document.createElementNS('http://www.w3.org/2000/svg','line');
+      arr.setAttribute('x1',node.x-R-24); arr.setAttribute('y1',node.y);
+      arr.setAttribute('x2',node.x-R-2);  arr.setAttribute('y2',node.y);
+      arr.setAttribute('stroke','#fbbf24'); arr.setAttribute('stroke-width','2.5');
+      arr.setAttribute('marker-end','url(#arr-hl)');
+      g.appendChild(arr);
+    }
+    if(node.accept){
+      const outer=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      outer.setAttribute('cx',node.x); outer.setAttribute('cy',node.y);
+      outer.setAttribute('r',R+6);
+      outer.setAttribute('fill','none');
+      outer.setAttribute('stroke','#34d399'); outer.setAttribute('stroke-width','2');
+      g.appendChild(outer);
+    }
+
+    const fill=node.dead?'#1f0d0d':node.accept?'#052518':'#0c1e35';
+    const stroke=node.dead?'#f87171':node.accept?'#34d399':'#38bdf8';
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',node.x); c.setAttribute('cy',node.y); c.setAttribute('r',R);
+    c.setAttribute('fill',fill); c.setAttribute('stroke',stroke); c.setAttribute('stroke-width','2');
+    c.setAttribute('class','node-circle');
+    g.appendChild(c);
+
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',node.x); t.setAttribute('y',node.y+4);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('fill','#e2e8f0'); t.setAttribute('font-size','11');
+    t.setAttribute('font-weight','600'); t.setAttribute('font-family','Fira Code,monospace');
+    t.setAttribute('pointer-events','none');
+    t.textContent=node.name;
+    g.appendChild(t);
+    nlay.appendChild(g);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RIGHT PANEL
+// ═══════════════════════════════════════════════════════════════════════════
+function renderRight() {
+  renderDeltaTable();
+  renderClosures();
+  renderFormalDef();
+}
+
+function renderDeltaTable() {
+  const w=document.getElementById('dtbl-wrap');
+  if(!nodes.length||!alphabet.length){w.innerHTML='<div style="font-size:.68rem;color:var(--muted)">Defina estados e alfabeto</div>';return;}
+  const syms=[...alphabet];
+  const hasEps=transitions.some(t=>t.symbols.includes(EPS));
+  if(hasEps) syms.push(EPS);
+
+  let html='<table class="dtbl"><thead><tr><th>δ</th>';
+  syms.forEach(s=>html+=`<th ${s===EPS?'class="eps-th"':''}>${s}</th>`);
+  html+='</tr></thead><tbody>';
+
+  nodes.forEach(n=>{
+    html+=`<tr><td>${n.start?'→ ':''}<b>${n.name}</b>${n.accept?' ✓':''}</td>`;
+    syms.forEach(sym=>{
+      const dests=transitions.filter(t=>t.from===n.id&&t.symbols.includes(sym)).map(t=>nodes.find(x=>x.id===t.to)?.name||'?');
+      const isMulti=dests.length>1;
+      const isEps=sym===EPS;
+      html+=`<td class="${isMulti?'multi':''}${isEps?' eps-cell':''}">${dests.length?dests.join(','):'—'}</td>`;
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+
+  const isNFA=transitions.some(t=>{
+    if(t.symbols.includes(EPS)) return true;
+    for(const s of t.symbols){
+      if(transitions.filter(x=>x.from===t.from&&x.symbols.includes(s)).length>1) return true;
+    }
+    return false;
+  });
+  if(isNFA) html+=`<div style="margin-top:.5rem;font-size:.65rem;color:var(--eps)">⚡ Células com múltiplos destinos ou ε = AFND</div>`;
+  w.innerHTML=html;
+}
+
+function renderClosures() {
+  const content=document.getElementById('closure-content');
+  const hasEps=transitions.some(t=>t.symbols.includes(EPS));
+  if(!hasEps||!nodes.length){content.innerHTML='<span style="color:var(--muted)">Adicione transições ε para ver os fechos</span>';return;}
+  content.innerHTML=nodes.map(n=>{
+    const cl=epsClosure([n.id]);
+    const names=cl.map(id=>nodes.find(x=>x.id===id)?.name||'?');
+    return `<div class="cbox-row"><span class="cbox-state">${n.name}</span><span class="cbox-eq">→</span><span class="cbox-set">{${names.join(',')}}</span></div>`;
+  }).join('');
+}
+
+function renderFormalDef() {
+  const el=document.getElementById('fdef-box');
+  const s=nodes.find(n=>n.start);
+  const f=nodes.filter(n=>n.accept).map(n=>n.name);
+  const hasEps=transitions.some(t=>t.symbols.includes(EPS));
+  const type=hasEps?'AFND-ε':transitions.some(t=>{for(const sym of t.symbols){if(transitions.filter(x=>x.from===t.from&&x.symbols.includes(sym)).length>1)return true;} return false;})?'AFND':'AFD';
+  el.innerHTML=`
+    <div style="font-family:var(--fu);font-size:.62rem;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem">Definição Formal · ${type}</div>
+    <div class="fdef">
+      <b>Q</b> = {${nodes.map(n=>n.name).join(', ')||'∅'}}<br>
+      <b>Σ</b> = {${alphabet.join(', ')||'∅'}}${hasEps?' ∪ {ε}':''}<br>
+      <b>q₀</b> = ${s?.name||'—'}<br>
+      <b>F</b> = {${f.join(', ')||'∅'}}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LEFT PANEL LISTS
+// ═══════════════════════════════════════════════════════════════════════════
+function renderStateList() {
+  const el=document.getElementById('slist');
+  if(!nodes.length){el.innerHTML='<div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.4rem">Nenhum estado</div>';return;}
+  el.innerHTML=nodes.map(n=>{
+    const stroke=n.dead?'var(--err)':n.accept?'var(--ok)':'var(--accent)';
+    const fill=n.dead?'#1f0d0d':n.accept?'#052518':'#0c1e35';
+    const b=[n.start?'<span class="sb sb-s">→</span>':'',n.accept?'<span class="sb sb-a">✓</span>':'',n.dead?'<span class="sb sb-d">✗</span>':''].join('');
+    return `<div class="sitem" ondblclick="(()=>{editNodeId='${n.id}';const nd=nodes.find(x=>x.id==='${n.id}');document.getElementById('en-name').value=nd.name;document.getElementById('en-start').checked=nd.start;document.getElementById('en-accept').checked=nd.accept;document.getElementById('en-dead').checked=nd.dead;showModal('modal-node')})()">
+      <div class="sdot" style="border-color:${stroke};background:${fill}"></div>
+      <span class="sname">${n.name}</span>
+      <div class="sbadges">${b}</div>
+      <button class="delbtn" onclick="event.stopPropagation();deleteNode('${n.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderTransList() {
+  const el=document.getElementById('tlist');
+  if(!transitions.length){el.innerHTML='<div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.4rem">Nenhuma transição</div>';return;}
+  el.innerHTML=transitions.map(t=>{
+    const fn=nodes.find(n=>n.id===t.from)?.name||'?';
+    const tn=nodes.find(n=>n.id===t.to)?.name||'?';
+    const isEps=t.symbols.every(s=>s===EPS);
+    const hasEps=t.symbols.includes(EPS);
+    return `<div class="titem">
+      <span>${fn}</span>
+      <span class="tarr">─<span class="tsym${isEps?' eps-sym':''}">${t.symbols.join(',')}</span>→</span>
+      <span>${tn}</span>
+      <button class="delbtn" style="margin-left:auto" onclick="transitions=transitions.filter(x=>x.id!=='${t.id}');updateNFAbadge();render()">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderSelects() {
+  ['tf-from','tf-to'].forEach(id=>{
+    const sel=document.getElementById(id), cur=sel.value;
+    sel.innerHTML='<option value="">—</option>'+nodes.map(n=>`<option value="${n.id}"${n.id===cur?' selected':''}>${n.name}</option>`).join('');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════════════════════
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',i===j));
+  document.querySelectorAll('.tab-content').forEach((t,j)=>t.classList.toggle('on',i===j));
+  if(i===1) renderDeltaTable();
+  if(i===2) renderClosures();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTO LAYOUT
+// ═══════════════════════════════════════════════════════════════════════════
+function autoLayout() {
+  if(!nodes.length) return;
+  const rect=svg.getBoundingClientRect();
+  const W=rect.width||600, H=rect.height||400;
+  if(nodes.length===1){nodes[0].x=W/2;nodes[0].y=H/2;render();return;}
+  nodes.forEach((n,i)=>{
+    const a=(2*Math.PI*i/nodes.length)-Math.PI/2;
+    n.x=W/2+Math.min(W*.38,200)*Math.cos(a);
+    n.y=H/2+Math.min(H*.38,160)*Math.sin(a);
+  });
+  render(); notify('Layout aplicado','ok');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════════════════════
+function exportJSON() {
+  const data={name:document.getElementById('aut-name').value,alphabet,nodes,transitions};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(data.name||'automato').replace(/[^a-z0-9]/gi,'_')+'.json';
+  a.click(); notify('Exportado!','ok');
+}
+function importClick(){document.getElementById('fimport').click();}
+function importJSON(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      nodes=d.nodes||[]; transitions=d.transitions||[]; alphabet=d.alphabet||[];
+      nodeCounter=nodes.length; transCounter=transitions.length;
+      document.getElementById('aut-name').value=d.name||'';
+      document.getElementById('alphabet').value=alphabet.join(', ');
+      updateAlpha(); render(); notify('Importado!','ok');
+    }catch{notify('Erro no JSON','err');}
+  };
+  r.readAsText(f); e.target.value='';
+}
+function clearAll(){
+  if(!confirm('Limpar tudo?')) return;
+  nodes=[]; transitions=[]; nodeCounter=0; transCounter=0;
+  document.getElementById('aut-name').value='';
+  render(); notify('Limpo!');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CTX MENU
+// ═══════════════════════════════════════════════════════════════════════════
+function showCtx(x,y,items){
+  const m=document.getElementById('ctx');
+  m.innerHTML=items.map(item=>{
+    if(item==='sep') return '<div class="csep"></div>';
+    return `<div class="ci${item.danger?' danger':''}${item.eps?' eps-ci':''}" onclick="closeCtx();(${item.fn.toString()})()">
+      <span>${item.icon}</span><span>${item.label}</span></div>`;
+  }).join('');
+  m.style.left=x+'px'; m.style.top=y+'px';
+  m.classList.add('on');
+}
+function closeCtx(){document.getElementById('ctx').classList.remove('on');}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════════════════════════
+function showModal(id){document.getElementById(id).classList.add('on');}
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+document.querySelectorAll('.overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on');}));
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NOTIFY
+// ═══════════════════════════════════════════════════════════════════════════
+let ntimer;
+function notify(msg,type=''){
+  const el=document.getElementById('notif');
+  el.textContent=msg; el.className='notif on '+(type==='ok'?'ok':type==='err'?'err':'');
+  clearTimeout(ntimer); ntimer=setTimeout(()=>el.classList.remove('on'),2500);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DEMO: AFND com ε — L = {a^n b^m | n≥1, m≥1} simplificado
+// ═══════════════════════════════════════════════════════════════════════════
+window.addEventListener('load',()=>setTimeout(()=>{
+  document.getElementById('aut-name').value="AFND: L = { w ∈ {a,b}* | w termina em 'ab' }";
+  document.getElementById('alphabet').value='a, b';
+  updateAlpha();
+
+  const rect=svg.getBoundingClientRect();
+  const W=rect.width||600, H=rect.height||400;
+  nodes=[
+    {id:'n0',name:'q0',x:W*.12,y:H*.5,start:true, accept:false,dead:false},
+    {id:'n1',name:'q1',x:W*.38,y:H*.5,start:false,accept:false,dead:false},
+    {id:'n2',name:'q2',x:W*.62,y:H*.5,start:false,accept:false,dead:false},
+    {id:'n3',name:'q3',x:W*.88,y:H*.5,start:false,accept:true, dead:false},
+  ];
+  nodeCounter=4;
+  transitions=[
+    {id:'t0',from:'n0',to:'n0',symbols:['a','b']},
+    {id:'t1',from:'n0',to:'n1',symbols:['a']},
+    {id:'t2',from:'n1',to:'n2',symbols:['b']},
+    {id:'t3',from:'n2',to:'n3',symbols:[EPS]},
+  ];
+  transCounter=4;
+  updateNFAbadge();
+  render();
+},120));
+</script>
+</body>
+</html>
