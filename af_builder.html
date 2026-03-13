@@ -399,6 +399,7 @@ input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:po
 // STATE
 // ═══════════════════════════════════════════════════════════════════════════
 const EPS = 'ε';
+
 let nodes = [], transitions = [], alphabet = [];
 let mode = 'node', transSrc = null, dragging = null;
 let nodeCounter = 0, transCounter = 0;
@@ -410,10 +411,7 @@ const nlay  = document.getElementById('nlayer');
 const tmp   = document.getElementById('tmpline');
 const R = 28;
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MODE
-// ═══════════════════════════════════════════════════════════════════════════
-function setMode(m) {
+const setMode = (m) =>{
   mode = m; transSrc = null; tmp.style.display='none';
   ['node','trans','eps','sel'].forEach(x => document.getElementById('bm-'+x).classList.remove('on'));
   document.getElementById('bm-'+m).classList.add('on');
@@ -422,10 +420,7 @@ function setMode(m) {
   svg.style.cursor = m==='sel'?'default':'crosshair';
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ALPHABET
-// ═══════════════════════════════════════════════════════════════════════════
-function updateAlpha() {
+const updateAlpha = () => {
   const raw = document.getElementById('alphabet').value;
   alphabet = raw.split(',').map(s=>s.trim()).filter(Boolean).filter(s=>s!==EPS);
   const pp = document.getElementById('alpha-pills');
@@ -436,7 +431,7 @@ function updateAlpha() {
   renderRight();
 }
 
-function updateNFAbadge() {
+const updateNFAbadge = () => {
   const isNFA = transitions.some(t => {
     if(t.symbols.includes(EPS)) return true;
     // check multiple destinations for same state+symbol
@@ -453,10 +448,8 @@ function updateNFAbadge() {
   b.style.borderColor = isNFA ? 'var(--eps)' : 'var(--accent)';
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ADD NODES
-// ═══════════════════════════════════════════════════════════════════════════
-function addStatePanel() {
+
+const addStatePanel = () => {
   const name = document.getElementById('ns-name').value.trim() || `q${nodeCounter}`;
   const start = document.getElementById('ns-start').checked;
   const accept = document.getElementById('ns-accept').checked;
@@ -506,10 +499,7 @@ svg.addEventListener('mousemove', e => {
 document.addEventListener('mouseup',()=>{dragging=null;});
 document.addEventListener('click', closeCtx);
 
-// ═══════════════════════════════════════════════════════════════════════════
-// NODE EVENTS
-// ═══════════════════════════════════════════════════════════════════════════
-function onNodeDown(e,id) {
+const onNodeDown = (e, id) => {
   e.stopPropagation();
   if(mode==='sel'){
     const p=svgCoords(e), n=nodes.find(x=>x.id===id);
@@ -530,7 +520,8 @@ function onNodeDown(e,id) {
   }
 }
 
-function onNodeDbl(e,id) {
+  
+const onNodeDbl = (e,id) => {
   e.stopPropagation();
   editNodeId=id;
   const n=nodes.find(x=>x.id===id);
@@ -541,7 +532,8 @@ function onNodeDbl(e,id) {
   showModal('modal-node');
 }
 
-function onNodeRight(e,id) {
+  
+const onNodeRight = (e,id) => {
   e.preventDefault(); e.stopPropagation();
   const n=nodes.find(x=>x.id===id);
   showCtx(e.clientX,e.clientY,[
@@ -555,11 +547,7 @@ function onNodeRight(e,id) {
     {icon:'🗑',label:'Excluir',fn:()=>deleteNode(id),danger:true},
   ]);
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// TRANSITIONS PANEL
-// ═══════════════════════════════════════════════════════════════════════════
-function addTransPanel() {
+const addTransPanel = () => {
   const from=document.getElementById('tf-from').value;
   const to=document.getElementById('tf-to').value;
   const raw=document.getElementById('tf-sym').value;
@@ -570,7 +558,8 @@ function addTransPanel() {
   render(); notify('Transição adicionada','ok');
 }
 
-function addEpsPanel() {
+  
+const addEpsPanel = () => {
   const from=document.getElementById('tf-from').value;
   const to=document.getElementById('tf-to').value;
   if(!from||!to){notify('Selecione De e Para','err');return;}
@@ -578,17 +567,14 @@ function addEpsPanel() {
   render(); notify('ε-transição adicionada','ok');
 }
 
-function mergeOrAddTrans(from,to,syms) {
+  
+const mergeOrAddTrans = (from,to,syms) => {
   const ex=transitions.find(t=>t.from===from&&t.to===to);
   if(ex){ex.symbols=[...new Set([...ex.symbols,...syms])];}
   else{transitions.push({id:'t'+transCounter++,from,to,symbols:syms});}
   updateNFAbadge();
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// TRANS MODAL
-// ═══════════════════════════════════════════════════════════════════════════
-function openTransModal(from,to,existId,preSyms) {
+const openTransModal = (from,to,existId,preSyms) => {
   if(existId){
     editTransData={type:'edit',id:existId};
     const t=transitions.find(x=>x.id===existId);
@@ -599,8 +585,7 @@ function openTransModal(from,to,existId,preSyms) {
   }
   showModal('modal-trans');
 }
-
-function saveTrans() {
+const saveTrans = () => {
   const raw=document.getElementById('et-sym').value;
   const syms=raw.split(',').map(s=>s.trim()).filter(Boolean);
   if(!syms.length){notify('Informe símbolos','err');return;}
@@ -614,7 +599,7 @@ function saveTrans() {
   closeModal('modal-trans'); render();
 }
 
-function deleteTrans() {
+const deleteTrans = () => {
   if(editTransData.type==='edit'){
     transitions=transitions.filter(t=>t.id!==editTransData.id);
     updateNFAbadge();
@@ -622,10 +607,7 @@ function deleteTrans() {
   closeModal('modal-trans'); render();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// EDIT NODE
-// ═══════════════════════════════════════════════════════════════════════════
-function saveNode() {
+const saveNode = () => {
   const n=nodes.find(x=>x.id===editNodeId); if(!n) return;
   const nm=document.getElementById('en-name').value.trim();
   if(nm) n.name=nm;
@@ -642,10 +624,7 @@ function deleteNode(id) {
   updateNFAbadge(); render();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ε-CLOSURE (core NFA algorithm)
-// ═══════════════════════════════════════════════════════════════════════════
-function epsClosure(stateIds) {
+const epsClosure = (stateIds) => {
   const visited=new Set(stateIds);
   const stack=[...stateIds];
   while(stack.length){
@@ -657,8 +636,7 @@ function epsClosure(stateIds) {
   return [...visited];
 }
 
-// NFA move: from a set of state IDs, read symbol, return new set (with ε-closure)
-function nfaMove(stateIds, sym) {
+const nfaMove = (stateIds, sym) => {
   const reached=new Set();
   stateIds.forEach(s=>{
     transitions
@@ -668,10 +646,8 @@ function nfaMove(stateIds, sym) {
   return epsClosure([...reached]);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SIMULATE (AFND by subset)
-// ═══════════════════════════════════════════════════════════════════════════
-function simulate(word) {
+
+const simulate = (word) => {
   const start=nodes.find(n=>n.start);
   if(!start) return {accepted:false,trace:[],finalStates:[]};
   let current=epsClosure([start.id]);
@@ -702,7 +678,7 @@ function simulate(word) {
   return {accepted,trace,finalStates:stateNames(current)};
 }
 
-function runTest(){
+const runTest = () => {
   const word=document.getElementById('tw').value;
   const {accepted,trace,finalStates}=simulate(word);
   const rbox=document.getElementById('rbox');
@@ -721,7 +697,7 @@ function runTest(){
   }).join('');
 }
 
-function runBatch(){
+const runBatch = () => {
   const words=document.getElementById('btwords').value.split('\n').map(w=>w.trim());
   const res=document.getElementById('bres');
   res.innerHTML=words.map(w=>{
@@ -735,10 +711,7 @@ function runBatch(){
   }).join('');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// AFND → AFD (Subset Construction)
-// ═══════════════════════════════════════════════════════════════════════════
-function convertNFAtoDFA() {
+const convertNFAtoDFA = () => {
   const start=nodes.find(n=>n.start);
   if(!start||!alphabet.length){notify('Defina estados, alfabeto e inicial','err');return;}
   const steps=[];
@@ -774,7 +747,7 @@ function convertNFAtoDFA() {
     });
   }
 
-  // Render result
+
   const stateList=Object.values(dfaStates);
   const box=document.getElementById('conv-result');
   box.innerHTML=`<h4>Resultado: AFND → AFD (${stateList.length} estados)</h4>
@@ -784,15 +757,15 @@ function convertNFAtoDFA() {
     <div style="font-size:.65rem;color:var(--accent2);margin-bottom:.4rem;font-family:var(--fu);font-weight:700">Estados do AFD resultante</div>`
     +stateList.map(s=>`<div class="conv-step"><b>${s.label}</b>${s.accept?' <span style="color:var(--ok)">✓ aceitação</span>':''}</div>`).join('');
 
-  // Load into canvas option
+  // carrega AFN no canvas para visualização
   box.innerHTML+=`<button class="btn btn-ok" style="margin-top:.6rem" onclick="loadDFAfromSubset(${JSON.stringify({dfaStates,dfaTrans,startKey}).replace(/"/g,'&quot;')})">⬤ Carregar AFD no Canvas</button>`;
 
   switchTab(3);
   notify('Conversão concluída! '+stateList.length+' estados','ok');
 }
 
-function loadDFAfromSubset(data) {
-  // parse escaped JSON back
+const loadDFAfromSubset = (data) => {
+
   const {dfaStates,dfaTrans,startKey}=data;
   nodes=[]; transitions=[];
   nodeCounter=0; transCounter=0;
@@ -817,16 +790,14 @@ function loadDFAfromSubset(data) {
   notify('AFD carregado no canvas!','ok');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════════════════════════════
-function render() {
+const render = () => {
   renderEdges(); renderNodes();
   renderStateList(); renderTransList(); renderSelects();
   renderRight();
 }
 
-function renderEdges() {
+const renderEdges = () =>{
+
   elay.innerHTML='';
   const pairs={};
   transitions.forEach(t=>{
@@ -879,7 +850,7 @@ function renderEdges() {
   });
 }
 
-function mkTxt(x,y,content,cls='elabel') {
+const mkTxt = (x,y,content,cls='elabel') => {
   const t=document.createElementNS('http://www.w3.org/2000/svg','text');
   t.setAttribute('x',x); t.setAttribute('y',y);
   t.setAttribute('text-anchor','middle');
@@ -888,7 +859,7 @@ function mkTxt(x,y,content,cls='elabel') {
   return t;
 }
 
-function renderNodes() {
+const renderNodes = () => {
   nlay.innerHTML='';
   nodes.forEach(node=>{
     const g=document.createElementNS('http://www.w3.org/2000/svg','g');
@@ -934,16 +905,13 @@ function renderNodes() {
   });
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// RIGHT PANEL
-// ═══════════════════════════════════════════════════════════════════════════
-function renderRight() {
+const renderRight = () => {
   renderDeltaTable();
   renderClosures();
   renderFormalDef();
 }
 
-function renderDeltaTable() {
+const renderDeltaTable = () =>{
   const w=document.getElementById('dtbl-wrap');
   if(!nodes.length||!alphabet.length){w.innerHTML='<div style="font-size:.68rem;color:var(--muted)">Defina estados e alfabeto</div>';return;}
   const syms=[...alphabet];
@@ -977,7 +945,7 @@ function renderDeltaTable() {
   w.innerHTML=html;
 }
 
-function renderClosures() {
+const renderClosures = () => {
   const content=document.getElementById('closure-content');
   const hasEps=transitions.some(t=>t.symbols.includes(EPS));
   if(!hasEps||!nodes.length){content.innerHTML='<span style="color:var(--muted)">Adicione transições ε para ver os fechos</span>';return;}
@@ -988,7 +956,7 @@ function renderClosures() {
   }).join('');
 }
 
-function renderFormalDef() {
+const renderFormalDef = () => {
   const el=document.getElementById('fdef-box');
   const s=nodes.find(n=>n.start);
   const f=nodes.filter(n=>n.accept).map(n=>n.name);
@@ -1004,10 +972,7 @@ function renderFormalDef() {
     </div>`;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// LEFT PANEL LISTS
-// ═══════════════════════════════════════════════════════════════════════════
-function renderStateList() {
+const renderStateList = () => {
   const el=document.getElementById('slist');
   if(!nodes.length){el.innerHTML='<div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.4rem">Nenhum estado</div>';return;}
   el.innerHTML=nodes.map(n=>{
@@ -1023,7 +988,8 @@ function renderStateList() {
   }).join('');
 }
 
-function renderTransList() {
+  
+const renderTransList = () => {
   const el=document.getElementById('tlist');
   if(!transitions.length){el.innerHTML='<div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.4rem">Nenhuma transição</div>';return;}
   el.innerHTML=transitions.map(t=>{
@@ -1040,27 +1006,21 @@ function renderTransList() {
   }).join('');
 }
 
-function renderSelects() {
+const renderSelects = () => {
   ['tf-from','tf-to'].forEach(id=>{
     const sel=document.getElementById(id), cur=sel.value;
     sel.innerHTML='<option value="">—</option>'+nodes.map(n=>`<option value="${n.id}"${n.id===cur?' selected':''}>${n.name}</option>`).join('');
   });
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════════════════════════════════════
-function switchTab(i) {
+const switchTab = (i) => {
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',i===j));
   document.querySelectorAll('.tab-content').forEach((t,j)=>t.classList.toggle('on',i===j));
   if(i===1) renderDeltaTable();
   if(i===2) renderClosures();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// AUTO LAYOUT
-// ═══════════════════════════════════════════════════════════════════════════
-function autoLayout() {
+const autoLayout = () => {
   if(!nodes.length) return;
   const rect=svg.getBoundingClientRect();
   const W=rect.width||600, H=rect.height||400;
@@ -1073,10 +1033,7 @@ function autoLayout() {
   render(); notify('Layout aplicado','ok');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// EXPORT / IMPORT
-// ═══════════════════════════════════════════════════════════════════════════
-function exportJSON() {
+const exportJSON = () => { //exporta pra importação 
   const data={name:document.getElementById('aut-name').value,alphabet,nodes,transitions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');
@@ -1084,8 +1041,8 @@ function exportJSON() {
   a.download=(data.name||'automato').replace(/[^a-z0-9]/gi,'_')+'.json';
   a.click(); notify('Exportado!','ok');
 }
-function importClick(){document.getElementById('fimport').click();}
-function importJSON(e){
+const importClick = () => {document.getElementById('fimport').click();}
+const importJSON = (e) => {
   const f=e.target.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=ev=>{
@@ -1100,17 +1057,15 @@ function importJSON(e){
   };
   r.readAsText(f); e.target.value='';
 }
-function clearAll(){
+
+const clearAll = () => {
   if(!confirm('Limpar tudo?')) return;
   nodes=[]; transitions=[]; nodeCounter=0; transCounter=0;
   document.getElementById('aut-name').value='';
   render(); notify('Limpo!');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// CTX MENU
-// ═══════════════════════════════════════════════════════════════════════════
-function showCtx(x,y,items){
+const showCtx = (x,y,items) => {
   const m=document.getElementById('ctx');
   m.innerHTML=items.map(item=>{
     if(item==='sep') return '<div class="csep"></div>';
@@ -1122,27 +1077,19 @@ function showCtx(x,y,items){
 }
 function closeCtx(){document.getElementById('ctx').classList.remove('on');}
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MODALS
-// ═══════════════════════════════════════════════════════════════════════════
-function showModal(id){document.getElementById(id).classList.add('on');}
-function closeModal(id){document.getElementById(id).classList.remove('on');}
+
+const showModal = (id) => {document.getElementById(id).classList.add('on');}
+const closeModal = (id) => {document.getElementById(id).classList.remove('on');}
 document.querySelectorAll('.overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on');}));
 
-// ═══════════════════════════════════════════════════════════════════════════
-// NOTIFY
-// ═══════════════════════════════════════════════════════════════════════════
 let ntimer;
-function notify(msg,type=''){
+const notify = (msg,type='') => {
   const el=document.getElementById('notif');
   el.textContent=msg; el.className='notif on '+(type==='ok'?'ok':type==='err'?'err':'');
   clearTimeout(ntimer); ntimer=setTimeout(()=>el.classList.remove('on'),2500);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// DEMO: AFND com ε — L = {a^n b^m | n≥1, m≥1} simplificado
-// ═══════════════════════════════════════════════════════════════════════════
-window.addEventListener('load',()=>setTimeout(()=>{
+window.addEventListener('load',()=>setTimeout(()=>{ //demos
   document.getElementById('aut-name').value="AFND: L = { w ∈ {a,b}* | w termina em 'ab' }";
   document.getElementById('alphabet').value='a, b';
   updateAlpha();
